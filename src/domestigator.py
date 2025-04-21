@@ -8,6 +8,19 @@ import math
 
 DEBUG = True # so it's come to this
 
+
+class REnzyme:
+    def __init__(self,name,site):
+        self.name = name
+        self.site = site
+        self.rc_site = str(Seq(site).reverse_complement())
+    def find_cuts(self,seq):
+        fwd_cuts = [(self.site, m.start()) for m in re.finditer(self.site, seq)]
+        rev_cuts = [(self.rc_site, m.start()) for m in re.finditer(self.rc_site, seq)]
+        cuts = fwd_cuts + rev_cuts
+        return cuts
+
+
 class Optimizer:
     # Lists are ordered in terms of most frequent
     human_optimized_codons = {
@@ -81,10 +94,13 @@ class Optimizer:
         'G': ['GGT', 'GGC', 'GGA', 'GGG']  # Glycine
     }
 
-    def __init__(self,seq):
-        self.seq = seq
-        self.domesticated = self.domesticate_cuts(self.seq)
+    def __init__(self):
+        self.domesticated = self.domesticate_cuts()
 
+    def new_find_cuts(self,seq) -> List:
+        '''
+        Takes a DNA sequence and returns a list containing cut sites.
+        '''
     def domesticate_cuts(self,seq):
         '''
         Walks through each cut found for the sequence and attempts to break the
