@@ -74,6 +74,14 @@ check_tests = [
     ("2345GGTCTC1234", "GGTCTC", 4, ("234","34")), # +1
     ("12345GGTCTC123", "GGTCTC", 5, ("123","23")), # +2
 ]
+# TODO:
+# - add tests for get_seq_freq
+# - add tests for possible_seqs
+#   - I'm not even gonna pretend to know a good way to make these tests
+
+freq_tests = [
+    ("GGTCTC","GGTCTC",0)
+]
 @pytest.mark.parametrize("enz,seq,expected",tests)
 def test_find_cuts(enz,seq,expected):
     assert enz.find_cuts(seq) == expected
