@@ -1,5 +1,6 @@
 import pytest
 from domestigator import REnzyme
+from domestigator import WildSite
 
 # Cut sites
 bsai = REnzyme("BsaI","GGTCTC")
@@ -31,6 +32,37 @@ tests = [
     (paqci, "GCAGGTGcccGCAGGTG", [("GCAGGTG", 0), ("GCAGGTG", 10)]),  # Multiple reverse
 ]
 
+ws_tests = [
+    # BsaI (forward: GGTCTC, reverse: GAGACC)
+    ("GGTCTCaaa", "GGTCTC", 0, "GGTCTC"),        # BsaI forward, in frame
+    ("aGGTCTCaaa", "GGTCTC", 1, "aGGTCTCaa"),     # BsaI forward, +1
+    ("aaGGTCTCaaa", "GGTCTC", 2, "aaGGTCTCa"),    # BsaI forward, +2
+    ("GAGACCaaa", "GAGACC", 0, "GAGACC"),        # BsaI reverse, in frame
+    ("aGAGACCaaa", "GAGACC", 1, "aGAGACCaa"),     # BsaI reverse, +1
+    ("aaGAGACCaaa", "GAGACC", 2, "aaGAGACCa"),    # BsaI reverse, +2
+
+    # BsmBI (forward: CGTCTC, reverse: GAGACG)
+    ("CGTCTCaaa", "CGTCTC", 0, "CGTCTC"),        # BsmBI forward, in frame
+    ("aCGTCTCaaa", "CGTCTC", 1, "aCGTCTCaa"),     # BsmBI forward, +1
+    ("aaCGTCTCaaa", "CGTCTC", 2, "aaCGTCTCa"),    # BsmBI forward, +2
+    ("GAGACGaaa", "GAGACG", 0, "GAGACG"),        # BsmBI reverse, in frame
+    ("aGAGACGaaa", "GAGACG", 1, "aGAGACGaa"),     # BsmBI reverse, +1
+    ("aaGAGACGaaa", "GAGACG", 2, "aaGAGACGa"),    # BsmBI reverse, +2
+
+    # PaqCI (forward: CACCTGC, reverse: GCAGGTG)
+    ("CACCTGCaaa", "CACCTGC", 0, "CACCTGCaa"),        # PaqCI forward, in frame
+    ("aCACCTGCaaa", "CACCTGC", 1, "aCACCTGCa"),      # PaqCI forward, +1
+    ("aaCACCTGCaaa", "CACCTGC", 2, "aaCACCTGC"),     # PaqCI forward, +2
+    ("GCAGGTGaaa", "GCAGGTG", 0, "GCAGGTGaa"),        # PaqCI reverse, in frame
+    ("aGCAGGTGaaa", "GCAGGTG", 1, "aGCAGGTGa"),      # PaqCI reverse, +1
+    ("aaGCAGGTGaaa", "GCAGGTG", 2, "aaGCAGGTG"),     # PaqCI reverse, +2
+]
+
 @pytest.mark.parametrize("enz,seq,expected",tests)
 def test_find_cuts(enz,seq,expected):
     assert enz.find_cuts(seq) == expected
+
+@pytest.mark.parametrize("seq,cut,index,expected",ws_tests)
+def test_wild_site(seq,cut,index,expected):
+    ws = WildSite(seq,cut,index)
+    assert ws.orf_seq == expected

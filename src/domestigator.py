@@ -9,6 +9,26 @@ import math
 DEBUG = True # so it's come to this
 
 
+class WildSite:
+    def __init__(self,seq,site,index):
+        self.seq = seq
+        self.site = site
+        self.index = index
+        self.orf_seq = self.get_orf_seq()
+
+    def get_orf_seq(self):
+        cut_len = len(self.site)
+
+        orf_index = self.index % 3 # Tells us the offset from the original ORF (0,1,2, 3=0)
+        start = max(self.index - orf_index,0) # clamp value at start of the seq
+        end = self.index + cut_len
+        adjusted_end = math.ceil(end/3)*3 # rounds up to the next codon triplet
+
+        end = min(len(self.seq),    # clamps the end to the end of the seq
+                  adjusted_end)
+        orf_seq = self.seq[start:end]
+        return orf_seq
+
 class REnzyme:
     def __init__(self,name,site):
         self.name = name
