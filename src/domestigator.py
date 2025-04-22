@@ -13,21 +13,46 @@ class WildSite:
     def __init__(self,seq,site,index):
         self.seq = seq
         self.site = site
+        self.cut_len = len(site)
         self.index = index
+        self.orf_index = index % 3
+        
         self.orf_seq = self.get_orf_seq()
+        self.orf_len = len(self.orf_seq)
+        self.left,self.right = self.get_checks()
+
+    def get_checks(self):
+        '''
+        Gets the left/right regions to check if edits introduce a new
+        cut site. Only len(cut)-1.
+        '''
+        left_end = self.index - self.orf_index
+        left_start = max(left_end - (self.cut_len - 1),0)
+        left = self.seq[left_start:left_end]
+
+        right_start = left_end + self.orf_len
+        right_end = min(right_start + self.cut_len - 1, len(self.seq))
+        right = self.seq[right_start:right_end]
+        print(f"Index: {self.index}")
+        print(f"ORF: {self.orf_index}")
+        print(f"Left: {left_start} {left_end}")
+        print(self.orf_seq)
+        print(f"Right: {right_start} {right_end}")
+        return left,right
 
     def get_orf_seq(self):
-        cut_len = len(self.site)
-
-        orf_index = self.index % 3 # Tells us the offset from the original ORF (0,1,2, 3=0)
-        start = max(self.index - orf_index,0) # clamp value at start of the seq
-        end = self.index + cut_len
+        '''
+        Gets ORF containing cut site.
+        '''
+        start = max(self.index - self.orf_index,0) # clamp value at start of the seq
+        end = self.index + self.cut_len
         adjusted_end = math.ceil(end/3)*3 # rounds up to the next codon triplet
 
         end = min(len(self.seq),    # clamps the end to the end of the seq
                   adjusted_end)
         orf_seq = self.seq[start:end]
         return orf_seq
+
 
 class REnzyme:
     def __init__(self,name,site):

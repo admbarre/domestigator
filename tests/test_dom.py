@@ -57,7 +57,23 @@ ws_tests = [
     ("aGCAGGTGaaa", "GCAGGTG", 1, "aGCAGGTGa"),      # PaqCI reverse, +1
     ("aaGCAGGTGaaa", "GCAGGTG", 2, "aaGCAGGTG"),     # PaqCI reverse, +2
 ]
+check_tests = [
+    ("x12345GGTCTC12345yyy", "GGTCTC", 6, ("12345","12345")), # +0 L/R full length
+    ("xx12345GGTCTC12345yyy", "GGTCTC", 7, ("x1234","345yy")), # +1 L/R full length
+    ("xxx12345GGTCTC12345yyy", "GGTCTC", 8, ("xx123","2345y")), # +2 L/R full length
 
+    ("345GGTCTC12345yyy", "GGTCTC", 3, ("345","12345")), # +0 R full length
+    ("2345GGTCTC12345yyy", "GGTCTC", 4, ("234","345yy")), # +1 R full length
+    ("12345GGTCTC12345yyy", "GGTCTC", 5, ("123","2345y")), # +2 R full length
+
+    ("x12345GGTCTC123", "GGTCTC", 6, ("12345","123")), # +0 L full length
+    ("xx12345GGTCTC1234", "GGTCTC", 7, ("x1234","34")), # +1 L full length
+    ("xxx12345GGTCTC123", "GGTCTC", 8, ("xx123","23")), # +2 L full length
+
+    ("345GGTCTC123", "GGTCTC", 3, ("345","123")), # +0
+    ("2345GGTCTC1234", "GGTCTC", 4, ("234","34")), # +1
+    ("12345GGTCTC123", "GGTCTC", 5, ("123","23")), # +2
+]
 @pytest.mark.parametrize("enz,seq,expected",tests)
 def test_find_cuts(enz,seq,expected):
     assert enz.find_cuts(seq) == expected
@@ -66,3 +82,12 @@ def test_find_cuts(enz,seq,expected):
 def test_wild_site(seq,cut,index,expected):
     ws = WildSite(seq,cut,index)
     assert ws.orf_seq == expected
+
+@pytest.mark.parametrize("seq,cut,index,expected",check_tests)
+def test_checks(seq,cut,index,expected):
+    left,right = expected
+    ws = WildSite(seq,cut,index)
+    assert ws.left == left
+    assert ws.right == right
+
+        
