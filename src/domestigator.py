@@ -1,10 +1,10 @@
-from itertools import product
-from itertools import chain
-import pandas as pd
-import re
 from Bio.Seq import Seq
-import math
+import pandas as pd
 import Levenshtein
+
+from itertools import product,chain
+import re
+import math
 
 human_codon_usage = {
     'F': [('TTT', 0.46), ('TTC', 0.54)],
@@ -73,9 +73,7 @@ class WildSite:
         self.orf_seq = self.get_orf_seq()
         self.orf_len = len(self.orf_seq)
 
-        self.left = self.right = ""
-        if self.orf_index != 0: # if we are in frame we don't need to check flanks
-            self.left,self.right = self.get_checks()
+        self.left,self.right = self.get_checks()
         self.residues = Seq(self.orf_seq).translate()
         self.possible = self.possible_seqs()
 
@@ -118,19 +116,33 @@ class WildSite:
         '''
         Converts a list of codons with their frequencies into a seq with a 
         combined frequency.
+
+        Args:
+            codons: List of codons with frequency.
+        Returns:
+            seq_freq: Tuple containing DNA seq concatenated from codon list, and
+                product of frequencies.
         '''
         codons,freqs = zip(*codons)
         freq_prod = math.prod(freqs)
         seq = "".join(codons)
-        return (seq,freq_prod)
+        seq_freq = (seq,freq_prod)
+        return seq_freq
 
 
-    def possible_seqs(self) -> list[str]:
+    def possible_seqs(self,seq: str) -> list[str]:
         '''
         Sorts by possible synonymous sequences by similarity first
         and then by degree of codon optimization.
+
+        Args:
+            seq: DNA sequence containing the cut site in correct ORF
+        Returns:
+            non_cutters: list of possible sequences w/o cut sites ranked by
+                Levenshtein distance to original seq and codon frequency.
         '''
-        codons = [human_codon_usage[res] for res in self.residues]
+        residues = Seq(seq).translate()
+        codons = [human_codon_usage[res] for res in residues]
         seq_freq = [self.get_seq_freq(p) for p in product(*codons)]
         seq_freq_dist = [(seq,freq,Levenshtein.ratio(seq,self.orf_seq)) for seq,freq in seq_freq]
         ranked = sorted(seq_freq_dist,
@@ -144,6 +156,7 @@ class WildSite:
         return non_cutters
 
 # NOTE: stop coding at 3:34AM my brain is fried
+# TODO: consider refactoring GG and Gator into a more meaningful hierarchy
 class Gator:
     gg = GG()
     def __init__(self):
@@ -159,7 +172,7 @@ class Gator:
         new_seq = seq
         for dom in domestications:
             old,new,index = dom
-            #assert len(old) == len(new)
+            assert len(old) == len(new)
             #print(old,new,index)
             new_seq = new_seq[:index] + new + new_seq[index+len(new):]
         #print("---")
