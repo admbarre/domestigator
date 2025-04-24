@@ -74,8 +74,7 @@ class WildSite:
         self.orf_len = len(self.orf_seq)
 
         self.left,self.right = self.get_checks()
-        self.residues = Seq(self.orf_seq).translate()
-        self.possible = self.possible_seqs()
+        self.possible = self.possible_seqs(self.orf_seq)
 
         # Get the best sequence
         self.optimal = self.possible[0]
